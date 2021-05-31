@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Nature Meditation Sound</string>
+
+    <!--    Test-->
+        <string name="gms_ad_app_id">ca-app-pub-3940256099942544~3347511713</string>
+        <string name="admob_unit_id_banner">ca-app-pub-3940256099942544/6300978111</string>
+        <string name="admob_unit_id_interstitial">ca-app-pub-3940256099942544/1033173712</string>
+        <string name="admob_unit_id_reward">ca-app-pub-3940256099942544/5224354917</string>
+
+    <!--        Release-->
+<!--    <string name="gms_ad_app_id">ca-app-pub-0894410772194388~1519568309</string>-->
+<!--    <string name="admob_unit_id_banner">ca-app-pub-0894410772194388/3576677880</string>-->
+<!--    <string name="admob_unit_id_interstitial">ca-app-pub-0894410772194388/6754339712</string>-->
+<!--    <string name="admob_unit_id_reward">ca-app-pub-0894410772194388/5058114664</string>-->
+<!--    <string name="admob_unit_id_openapp">ca-app-pub-0894410772194388/7492706313</string>-->
+
+</resources>
