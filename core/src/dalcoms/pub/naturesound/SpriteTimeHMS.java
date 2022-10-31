@@ -25,6 +25,7 @@ public class SpriteTimeHMS implements Renderable {
     final private int COLOR_MIN = 0x2d889fff;
     private int maxNumSec = 100;
     private int minNumSec = 0;
+    private boolean flagColorByRange = false;
 
     public SpriteTimeHMS(Array<Texture> textureArrayOfNumbers,
             Texture textureColon,
@@ -105,20 +106,30 @@ public class SpriteTimeHMS implements Renderable {
         setColorByRange();
     }
 
+    public boolean isColorByRange() {
+        return flagColorByRange;
+    }
+
+    public void setColorByRange(boolean colorByRange) {
+        flagColorByRange = colorByRange;
+    }
+
     private void setColorByRange() {
-        if (getTimeSec() < 0) {
-            setColors(COLOR_DISABLED);
-        } else {
-            float ratio = getTimeSec() > getMaxNumSec() ? 1f :
-                    (float) getTimeSec() / (float) (getMaxNumSec() - getMinNumSec());
+        if (isColorByRange()) {
+            if (getTimeSec() < 0) {
+                setColors(COLOR_DISABLED);
+            } else {
+                float ratio = getTimeSec() > getMaxNumSec() ? 1f :
+                        (float) getTimeSec() / (float) (getMaxNumSec() - getMinNumSec());
 
-            int r = getColorRatio(getRed(COLOR_MAX), getRed(COLOR_MIN), ratio);
-            int g = getColorRatio(getGreen(COLOR_MAX), getGreen(COLOR_MIN), ratio);
-            int b = getColorRatio(getBlue(COLOR_MAX), getBlue(COLOR_MIN), ratio);
+                int r = getColorRatio(getRed(COLOR_MAX), getRed(COLOR_MIN), ratio);
+                int g = getColorRatio(getGreen(COLOR_MAX), getGreen(COLOR_MIN), ratio);
+                int b = getColorRatio(getBlue(COLOR_MAX), getBlue(COLOR_MIN), ratio);
 
-            Gdx.app.log(tag, "ratio:" + ratio + " >> r:" + r + "  g:" + g + "  b:" + b);
-            setColors(getColorNum(r, g, b));
+                Gdx.app.log(tag, "ratio:" + ratio + " >> r:" + r + "  g:" + g + "  b:" + b);
+                setColors(getColorNum(r, g, b));
 
+            }
         }
     }
 
@@ -130,7 +141,7 @@ public class SpriteTimeHMS implements Renderable {
         return ret;
     }
 
-    private void setColors(int colorNum) {
+    public void setColors(int colorNum) {
         snHour10.setColor(new Color(colorNum));
         snHour1.setColor(new Color(colorNum));
         sgoColon1.setColor(new Color(colorNum));
@@ -142,7 +153,7 @@ public class SpriteTimeHMS implements Renderable {
     }
 
     private int getRed(int color) {
-        return (color*0xff0000) >>> (8 * 3);
+        return (color * 0xff0000) >>> (8 * 3);
     }
 
     private int getGreen(int color) {

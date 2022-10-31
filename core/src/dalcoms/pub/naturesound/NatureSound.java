@@ -143,6 +143,7 @@ public class NatureSound extends Game {
 
     private void loadAssetHomeScreen() {
         assetManager.load("img/homeBg.png", Texture.class, para);
+        assetManager.load("img/ico_leaf.png", Texture.class, para);
         assetManager.load("img/homeTitle.png", Texture.class, para);
 
         assetManager.load("img/btn_music.png", Texture.class, para);
@@ -162,11 +163,32 @@ public class NatureSound extends Game {
 
         assetManager.load("img/rect4x4.png", Texture.class, para);
 
-        assetManager.load("img/setting_bg.png", Texture.class, para);
-        assetManager.load("img/holo200.png", Texture.class, para);
         assetManager.load("img/btn_loop.png", Texture.class, para);
+        assetManager.load("img/btn_timer.png", Texture.class, para);
         assetManager.load("img/btn_volume.png", Texture.class, para);
-        assetManager.load("img/btn_hide.png", Texture.class, para);
+        assetManager.load("img/btn_moreapps.png", Texture.class, para);
+
+        assetManager.load("img/bgVolume.png", Texture.class, para);
+
+        //==Timer numbers
+        assetManager.load("img/timerNum0.png", Texture.class, para);
+        assetManager.load("img/timerNum1.png", Texture.class, para);
+        assetManager.load("img/timerNum2.png", Texture.class, para);
+        assetManager.load("img/timerNum3.png", Texture.class, para);
+        assetManager.load("img/timerNum4.png", Texture.class, para);
+        assetManager.load("img/timerNum5.png", Texture.class, para);
+        assetManager.load("img/timerNum6.png", Texture.class, para);
+        assetManager.load("img/timerNum7.png", Texture.class, para);
+        assetManager.load("img/timerNum8.png", Texture.class, para);
+        assetManager.load("img/timerNum9.png", Texture.class, para);
+        assetManager.load("img/timerNumColon.png", Texture.class, para);
+
+        assetManager.load("img/compassSmall.png", Texture.class, para);
+
+        assetManager.load("img/circle222.png", Texture.class, para);
+        assetManager.load("img/circle82.png", Texture.class, para);
+        assetManager.load("img/circle60.png", Texture.class, para);
+        assetManager.load("img/rect580x16.png", Texture.class, para);
 
 
         loadAssetMyAds();

@@ -24,6 +24,7 @@ import java.util.List;
 import dalcoms.lib.libgdx.GameGestureListener;
 import dalcoms.lib.libgdx.GameTimer;
 import dalcoms.lib.libgdx.IGestureInput;
+import dalcoms.lib.libgdx.Point2DFloat;
 import dalcoms.lib.libgdx.Renderable;
 import dalcoms.lib.libgdx.SpriteGameObject;
 import dalcoms.lib.libgdx.SpriteSimpleButton;
@@ -32,6 +33,7 @@ import dalcoms.lib.libgdx.Var4TimePair;
 import dalcoms.lib.libgdx.VariationPerTime;
 import dalcoms.lib.libgdx.easingfunctions.EaseBounceOut;
 import dalcoms.lib.libgdx.easingfunctions.EaseCircIn;
+import dalcoms.lib.libgdx.easingfunctions.EaseCircOut;
 import dalcoms.lib.libgdx.easingfunctions.EaseCubicIn;
 import dalcoms.lib.libgdx.easingfunctions.EaseCubicInOut;
 import dalcoms.lib.libgdx.easingfunctions.EaseElasticInOut;
@@ -53,10 +55,16 @@ class HomeScreen implements Screen, GameTimer.EventListener {
     private boolean flagFirstGame = true;
     private boolean checkAdmobAdsLoaded = false;
     private boolean isShowMyScreenAdsOn = false;
+    private boolean compassAvailable = false;
 
     private float myScreenAdsOnTime = 0;
     SpriteSimpleButton ssbMyScreenAdsDisplay, ssbMyScreenAdsCancelBtn;
+    SpriteSimpleButton ssbMoreMyApps;
     SpriteGameObject sgoMyScreenAdsCancelBg;
+    SpriteGameObject sgoBgSetting;
+    SpriteTimeHMS sthmsTimer;
+    SliderX playerTimerSlider;
+    SpriteGameObject sgoCompassSmall;
     Array<SoundButton> soundButtons;
 
     private int exeCount = 0;
@@ -187,89 +195,236 @@ class HomeScreen implements Screen, GameTimer.EventListener {
         initSoundButtons();
     }
 
-    private float initSettingPanelBg() {
-        SpriteGameObject sgoSettingPanelBg =
-                new SpriteGameObject(
-                        game.getAssetManager().get("img/setting_bg.png", Texture.class), 0,
-                        game.getLocationYFromTop(386f))
-                        .setSpriteBatch(game.getSpriteBatch());
-        sgoSettingPanelBg.setCenterLocationX(game.getCenterX());
-        sgoSettingPanelBg.setScaleX(0.4f);
-        sgoSettingPanelBg.setScaleY(0.1f);
-        sgoSettingPanelBg.scale(1f, 1f, 0.8f);
-        renderables.add(sgoSettingPanelBg);
-
-        return sgoSettingPanelBg.getCenterLocationY();
+    private void initBgSetting() {
+        this.sgoBgSetting = new SpriteGameObject(
+                game.getAssetManager().get("img/bgSetting.png", Texture.class), 0, 0)
+                .setSpriteBatch(game.getSpriteBatch());
     }
 
-    SpriteSimpleButton ssbSettingTimer;
+    private void initSettingTimer(Point2DFloat loc) {
+        final SpriteSimpleToggleButton sstbTimer = new SpriteSimpleToggleButton(
+                game.getAssetManager().get("img/btn_loop.png", Texture.class),
+                game.getAssetManager().get("img/btn_timer.png", Texture.class),
+                viewport, this.game.getSpriteBatch(),
+                loc.getX(), loc.getY());
 
-    private void initSettingTimer(float centerY) {
-        this.ssbSettingTimer = new SpriteSimpleButton(
-                game.getAssetManager().get("img/btn_loop.png", Texture.class), viewport,
-                game.getSpriteBatch(), 150f, 0);
-        ssbSettingTimer.setCenterLocationY(centerY);
-        ssbSettingTimer.setOnTouchEffect(SpriteSimpleButton.OnTouchEffect.HOLO);
-        ssbSettingTimer.setSgoTouchHolo(new SpriteGameObject(
-                game.getAssetManager().get("img/holo200.png", Texture.class), 0,
-                game.getLocationYFromTop(386f)).setSpriteBatch(game.getSpriteBatch()));
-        ssbSettingTimer.setTouchScale(1.6f);
+        sstbTimer.setScale(0.1f);
+        sstbTimer.scale(1f, 1f, 1.4f, EaseCubicIn.getInstance());
 
-        ssbSettingTimer.setScale(0.1f);
-        ssbSettingTimer.scale(1f,1f,1.4f,EaseCubicIn.getInstance());
 
-        renderables.add(ssbSettingTimer);
-        gestureDetectables.add(ssbSettingTimer);
+        sstbTimer.setEventListenerTab(new GameGestureListener.TabEventListener() {
+            @Override
+            public void onEvent(float v, float v1, int i, int i1) {
+                if (sstbTimer.isToggleOnTap()) {
+                    Gdx.app.log(tag, "sstbTimer is toggled to " + sstbTimer.getBtnToggleState());
+                }
+            }
+        });
+
+        renderables.add(sstbTimer);
+        gestureDetectables.add(sstbTimer);
     }
 
-    private void initSettingVolume(float centerY) {
+
+    private void initSettingVolume(Point2DFloat loc) {
         SpriteSimpleButton ssbSettingVolume = new SpriteSimpleButton(
                 game.getAssetManager().get("img/btn_volume.png", Texture.class), viewport,
-                game.getSpriteBatch(), 0, 0);
-
-        ssbSettingVolume.setCenterLocationX(game.getCenterX());
-        ssbSettingVolume.setCenterLocationY(centerY);
-        ssbSettingVolume.setOnTouchEffect(SpriteSimpleButton.OnTouchEffect.HOLO);
-        ssbSettingVolume.setSgoTouchHolo(new SpriteGameObject(
-                game.getAssetManager().get("img/holo200.png", Texture.class), 0,
-                game.getLocationYFromTop(386f)).setSpriteBatch(game.getSpriteBatch()));
-        ssbSettingVolume.setTouchScale(1.6f);
+                game.getSpriteBatch(), loc.getX(), loc.getY());
 
         ssbSettingVolume.setScale(0.1f);
-        ssbSettingVolume.scale(1f,1f,1.4f,EaseCubicIn.getInstance());
+        ssbSettingVolume.scale(1f, 1f, 1.4f, EaseCubicIn.getInstance());
 
         renderables.add(ssbSettingVolume);
         gestureDetectables.add(ssbSettingVolume);
 
     }
 
-    private void initSettingHide(float centerY) {
-        SpriteSimpleButton ssbSettingHide = new SpriteSimpleButton(
-                game.getAssetManager().get("img/btn_hide.png", Texture.class), viewport,
-                game.getSpriteBatch(), 850f, 0);
+    private void initMoreMyApps(Point2DFloat loc) {
+        this.ssbMoreMyApps = new SpriteSimpleButton(
+                game.getAssetManager().get("img/btn_moreapps.png", Texture.class), viewport,
+                game.getSpriteBatch(), loc.getX(), loc.getY());
 
-        ssbSettingHide.setCenterLocationY(centerY);
-        ssbSettingHide.setOnTouchEffect(SpriteSimpleButton.OnTouchEffect.HOLO);
-        ssbSettingHide.setSgoTouchHolo(new SpriteGameObject(
-                game.getAssetManager().get("img/holo200.png", Texture.class), 0,
-                game.getLocationYFromTop(386f)).setSpriteBatch(game.getSpriteBatch()));
-        ssbSettingHide.setTouchScale(1.6f);
+        ssbMoreMyApps.setScale(0.1f);
+        ssbMoreMyApps.scale(1f, 1f, 1.4f, EaseCubicIn.getInstance());
 
-        ssbSettingHide.setScale(0.1f);
-        ssbSettingHide.scale(1f,1f,1.4f,EaseCubicIn.getInstance());
+        ssbMoreMyApps.setEventListenerTab(new GameGestureListener.TabEventListener() {
+            @Override
+            public void onEvent(float v, float v1, int i, int i1) {
+                game.getLauncherHandler().actionMoreMyApp();
+            }
+        });
 
-        renderables.add(ssbSettingHide);
-        gestureDetectables.add(ssbSettingHide);
+        renderables.add(ssbMoreMyApps);
+        gestureDetectables.add(ssbMoreMyApps);
+    }
 
+    /**
+     * Hide MoreMyApps button from display
+     *
+     * @return return false when this button is not initialized.
+     */
+    private boolean hideMoreMyApps() {
+        final float movingT = 0.6f;
+        if (this.ssbMoreMyApps == null) {
+            Gdx.app.log(tag, "Can't hide moreMyApps button, this button is not initialized");
+            return false;
+        }
+        ssbMoreMyApps.paintA(0f, movingT * 2f);
+        ssbMoreMyApps.moveX(game.getViewportWidth() * 1.2f, movingT);
+
+        return true;
+    }
+
+    /**
+     * Display MoreMyApps button that is hidden
+     *
+     * @return return false when this button is not initialized.
+     */
+    private boolean displayMoreMyApps() {
+        final float movingT = 0.3f;
+        if (this.ssbMoreMyApps == null) {
+            Gdx.app.log(tag, "Can't display moreMyApps button, this button is not initialized");
+            return false;
+        }
+
+        ssbMoreMyApps.paintA(1f, movingT);
+        ssbMoreMyApps.moveX(640f, movingT);
+
+        return true;
+    }
+
+    private void initTimerTime(Point2DFloat loc) {
+        Array<Texture> nums = new Array<>();
+        nums.add(game.getAssetManager().get("img/timerNum0.png", Texture.class));
+        nums.add(game.getAssetManager().get("img/timerNum1.png", Texture.class));
+        nums.add(game.getAssetManager().get("img/timerNum2.png", Texture.class));
+        nums.add(game.getAssetManager().get("img/timerNum3.png", Texture.class));
+        nums.add(game.getAssetManager().get("img/timerNum4.png", Texture.class));
+        nums.add(game.getAssetManager().get("img/timerNum5.png", Texture.class));
+        nums.add(game.getAssetManager().get("img/timerNum6.png", Texture.class));
+        nums.add(game.getAssetManager().get("img/timerNum7.png", Texture.class));
+        nums.add(game.getAssetManager().get("img/timerNum8.png", Texture.class));
+        nums.add(game.getAssetManager().get("img/timerNum9.png", Texture.class));
+
+        this.sthmsTimer = new SpriteTimeHMS(nums,
+                                            game.getAssetManager()
+                                                .get("img/timerNumColon.png", Texture.class),
+                                            -1,
+                                            loc.getX(), loc.getY(),
+                                            3 * 60 * 60, 0,
+                                            game.getSpriteBatch());
+        this.sthmsTimer.setTimeSec(4034);
+        this.sthmsTimer.setColors(0xc1ccc3ff);
+
+        renderables.add(sthmsTimer);
+    }
+
+    private void initTimerSlider(Point2DFloat loc) {
+        final float sliderRange =
+                game.getAssetManager().get("img/rect580x16.png", Texture.class).getWidth();
+        final float touchMargin = 32f;
+        final float touchHeight = 60f + touchMargin;
+        final float minX = loc.getX();
+        final float maxX = minX + sliderRange;
+
+        playerTimerSlider
+                = new SliderX(loc.getX(),
+                              loc.getY() - touchMargin / 2f,
+                              sliderRange + touchMargin * 2f,
+                              touchHeight,
+                              minX, maxX,
+                              game.getSpriteBatch(), this.viewport);
+
+        playerTimerSlider
+                .setSlideBase(game.getAssetManager()
+                                  .get("img/rect580x16.png", Texture.class),
+                              0,
+                              0,
+                              true);
+        playerTimerSlider
+                .setSlideProgress(game.getAssetManager()
+                                      .get("img/rect580x16.png", Texture.class),
+                                  0,
+                                  0,
+                                  true);
+        playerTimerSlider
+                .setSlideKnob(game.getAssetManager()
+                                  .get("img/circle60.png", Texture.class),
+                              0,
+                              0,
+                              true);
+
+        playerTimerSlider
+                .setTouchHolo(game.getAssetManager()
+                                  .get("img/circle222.png", Texture.class),
+                              new Color(0xffffff4c));
+
+
+        playerTimerSlider.setColor_Base(new Color(0x09372fff));
+        playerTimerSlider.setColor_progressBar(new Color(0x041d18ff));
+        playerTimerSlider.setColor_knob(new Color(0x041d18ff));
+
+        playerTimerSlider.setEventListenerTouchDown(
+                new GameGestureListener.TouchDownEventListener() {
+                    @Override
+                    public void onEvent(float v, float v1, int i, int i1) {
+//                        updateSlider();
+                    }
+                });
+        playerTimerSlider.setEventListenerTouchDragged(
+                new GameGestureListener.TouchDraggedEventListener() {
+                    @Override
+                    public void onEvent(int i, int i1, int i2) {
+//                        updateSlider();
+                    }
+                });
+
+        renderables.add(playerTimerSlider);
+        gestureDetectables.add(playerTimerSlider);
+
+    }
+
+    private void initTimerTimeSlider(Point2DFloat loc) {
+        initTimerTime(new Point2DFloat(loc.getX(), loc.getY() + 80f));
+        initTimerSlider(new Point2DFloat(loc.getX(), loc.getY()));
+    }
+
+    private void initCompassSmall(Point2DFloat loc) {
+        sgoCompassSmall =
+                new SpriteGameObject(
+                        game.getAssetManager().get("img/compassSmall.png", Texture.class),
+                        loc.getX(), loc.getY())
+                        .setSpriteBatch(game.getSpriteBatch());
+        sgoCompassSmall.setColorA(0.1f);
+        sgoCompassSmall.paintA(1f, 2f);
+        renderables.add(sgoCompassSmall);
     }
 
     private void initSettingPanel() {
-        float centY = initSettingPanelBg();
-        initSettingTimer(centY);
-        initSettingVolume(centY);
-        initSettingHide(centY);
+        final float locY = game.getLocationYFromTop(348f);
+
+        initSettingVolume(new Point2DFloat(80f, locY));
+        initSettingTimer(new Point2DFloat(240f, locY));
+        initMoreMyApps(new Point2DFloat(640f, locY));
+        initTimerTimeSlider(new Point2DFloat(420f, locY));
+
+        if (Gdx.input.isPeripheralAvailable(Input.Peripheral.Compass)) {//compass is available
+            Gdx.app.log(tag, "Compass available");
+            setCompassAvailable(true);
+            initCompassSmall(new Point2DFloat(400f, locY));
+        } else {
+            Gdx.app.log(tag, "Compass is not available");
+            setCompassAvailable(false);
+        }
     }
 
+    public boolean isCompassAvailable() {
+        return compassAvailable;
+    }
+
+    public void setCompassAvailable(boolean compassAvailable) {
+        this.compassAvailable = compassAvailable;
+    }
 
     private void initSoundButtons() {
         final float hMargin = (game.getViewportWidth() - 920f) / 2f; // left/right margin
@@ -286,7 +441,7 @@ class HomeScreen implements Screen, GameTimer.EventListener {
                 new SoundButton(game.getAssetManager().get("img/btn_music.png", Texture.class),
                                 game.getAssetManager().get("img/rect4x4.png", Texture.class),
                                 this.viewport, game.getSpriteBatch(), hMargin,
-                                game.getLocationYFromTop(726f)) {
+                                game.getLocationYFromTop(668f)) {
                     @Override
                     public void onTab(int index, boolean buttonState) {
                         super.onTab(index, buttonState);
@@ -346,7 +501,18 @@ class HomeScreen implements Screen, GameTimer.EventListener {
         sgoTitle.paintA(1f, 1f);
         sgoTitle.setScale(0.5f);
         sgoTitle.scale(1f, 1f, 1.5f, EaseCubicIn.getInstance());
-        renderables.add(sgoTitle);
+
+        SpriteGameObject sgoLogo =
+                new SpriteGameObject(
+                        game.getAssetManager().get("img/ico_leaf.png", Texture.class),
+                        game.getViewportWidth(),
+                        sgoTitle.getLocationY() + sgoTitle.getHeight() -
+                        game.getAssetManager().get("img/ico_leaf.png", Texture.class).getHeight())
+                        .setSpriteBatch(game.getSpriteBatch());
+
+        sgoLogo.moveX(sgoTitle.getLocationX(), 1f);
+        sgoLogo.rotate(360f, 0.8f);
+        renderables.add(sgoLogo, sgoTitle);
     }
 
     private void initBg() {
@@ -523,11 +689,15 @@ class HomeScreen implements Screen, GameTimer.EventListener {
     @Override
     public void onTimer1sec(float v, int i) {
         Gdx.app.log(tag, "onTimer1sec");
+        if (isCompassAvailable()) {
+            checkCompass(1f);
+        }
     }
 
     @Override
     public void onTimer500msec(float v, int i) {
         Gdx.app.log(tag, "onTimer500msec");
+
     }
 
     @Override
@@ -541,7 +711,15 @@ class HomeScreen implements Screen, GameTimer.EventListener {
                 myScreenAdsOnTime = myScreenAdsOnTime - 0.25f;
             }
         }
+    }
 
+    private void checkCompass(float rotateT) {
+        if (sgoCompassSmall != null) {
+            float azimuth = Gdx.input.getAzimuth();
+            sgoCompassSmall.rotate(azimuth, rotateT);
+        } else {
+            Gdx.app.log(tag, "sgoCompass is null");
+        }
     }
 
     private void setGameTimer() {

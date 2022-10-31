@@ -562,8 +562,9 @@ public class AndroidLauncher extends AndroidApplication implements IActivityRequ
 
     private View createGameView() {
         AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
-        config.useAccelerometer = false;
-        config.useCompass = false;
+        config.useAccelerometer = true;
+        config.useCompass = true;
+        config.useGyroscope = false;
         config.useWakelock = true;
 
         return initializeForView(new NatureSound(this), config);
