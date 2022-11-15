@@ -22,6 +22,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import java.util.List;
 
 import dalcoms.lib.libgdx.GameGestureListener;
+import dalcoms.lib.libgdx.GameObject;
 import dalcoms.lib.libgdx.GameTimer;
 import dalcoms.lib.libgdx.IGestureInput;
 import dalcoms.lib.libgdx.Point2DFloat;
@@ -52,6 +53,9 @@ class HomeScreen implements Screen, GameTimer.EventListener {
     private Array<IGestureInput> gestureDetectablesTop;
     private boolean gestureDetectTop = false;
 
+    Array<Renderable> renderablesVolumePanel;
+    Array<IGestureInput> gesturesVolumePanel;
+
     private boolean flagFirstGame = true;
     private boolean checkAdmobAdsLoaded = false;
     private boolean isShowMyScreenAdsOn = false;
@@ -61,7 +65,6 @@ class HomeScreen implements Screen, GameTimer.EventListener {
     SpriteSimpleButton ssbMyScreenAdsDisplay, ssbMyScreenAdsCancelBtn;
     SpriteSimpleButton ssbMoreMyApps;
     SpriteGameObject sgoMyScreenAdsCancelBg;
-    SpriteGameObject sgoBgSetting;
     SpriteTimeHMS sthmsTimer;
     SliderX playerTimerSlider;
     SpriteGameObject sgoCompassSmall;
@@ -191,14 +194,9 @@ class HomeScreen implements Screen, GameTimer.EventListener {
     private void initGameObjects() {
         initBg();
         initTitle();
+        initVolumePanel();
         initSettingPanel();
         initSoundButtons();
-    }
-
-    private void initBgSetting() {
-        this.sgoBgSetting = new SpriteGameObject(
-                game.getAssetManager().get("img/bgSetting.png", Texture.class), 0, 0)
-                .setSpriteBatch(game.getSpriteBatch());
     }
 
     private void initSettingTimer(Point2DFloat loc) {
@@ -218,6 +216,15 @@ class HomeScreen implements Screen, GameTimer.EventListener {
                 if (sstbTimer.isToggleOnTap()) {
                     Gdx.app.log(tag, "sstbTimer is toggled to " + sstbTimer.getBtnToggleState());
                 }
+                if (sstbTimer.getBtnToggleState() == SpriteSimpleToggleButton.ButtonState.TOGGLED) {
+                    showTimerTimeSlider();
+                    hideMoreMyApps();
+                    hideCompassSmall();
+                } else {
+                    hideTimerTimeSlider();
+                    showMoreMyApps();
+                    showCompassSmall();
+                }
             }
         });
 
@@ -226,6 +233,171 @@ class HomeScreen implements Screen, GameTimer.EventListener {
     }
 
 
+    private void showVolumePanel() {
+        for (Renderable renderable : renderablesVolumePanel) {
+            renderablesTop.add(renderable);
+        }
+        for (IGestureInput gestureInput : gesturesVolumePanel) {
+            gestureDetectablesTop.add(gestureInput);
+        }
+
+        setGestureDetectTop(true);
+    }
+
+    private void hideVolmePanel() {
+        for (Renderable renderable : renderablesVolumePanel) {
+            safeRemoveRenderableTop(renderable);
+        }
+        for (IGestureInput gestureInput : gesturesVolumePanel) {
+            gestureDetectablesTop.removeValue(gestureInput, true);
+        }
+
+        setGestureDetectTop(false);
+    }
+
+    private void initVolumePanelBg() {
+        SpriteGameObject sgoVolumePanelBg = new SpriteGameObject(
+                game.getAssetManager().get("img/bgVolume.png", Texture.class), 0, 0)
+                .setSpriteBatch(game.getSpriteBatch());
+        SpriteGameObject sgoTitleBg = new SpriteGameObject(
+                game.getAssetManager().get("img/rect1080x220.png", Texture.class),
+                0, game.getLocationYFromTop(220f))
+                .setSpriteBatch(game.getSpriteBatch());
+
+        sgoTitleBg.setColor(new Color(0x00000012));
+
+        renderablesVolumePanel.add(sgoVolumePanelBg, sgoTitleBg);
+    }
+
+    private void initVolumePanelHead() {
+        SpriteGameObject sgoIcon = new SpriteGameObject(
+                game.getAssetManager().get("img/icoVolume.png", Texture.class), 40f, 0)
+                .setSpriteBatch(game.getSpriteBatch());
+
+        SpriteGameObject sgoTitle = new SpriteGameObject(
+                game.getAssetManager().get("img/textVolumeSetting.png", Texture.class), 0, 0)
+                .setSpriteBatch(game.getSpriteBatch());
+
+        SpriteSimpleButton ssbCancel = new SpriteSimpleButton(
+                game.getAssetManager().get("img/btn_cancle.png", Texture.class), viewport,
+                game.getSpriteBatch(), 920f, 0);
+
+        ssbCancel.setEventListenerTab(new GameGestureListener.TabEventListener() {
+            @Override
+            public void onEvent(float v, float v1, int i, int i1) {
+                hideVolmePanel();
+            }
+        });
+
+        sgoIcon.setCenterLocationY(game.getLocationYFromTop(220f / 2f));
+        sgoTitle.setCenterLocationX(game.getCenterX());
+        sgoTitle.setCenterLocationY(game.getLocationYFromTop(220f / 2f));
+        ssbCancel.setCenterLocationY(game.getLocationYFromTop(220f / 2f));
+
+        renderablesVolumePanel.add(sgoIcon, sgoTitle, ssbCancel);
+        gestureDetectablesTop.add(ssbCancel);
+    }
+
+    private void initVolumeIconSliders() {
+        final float header = 220f;
+        final float gap = 12f + 120f;
+        String[] iconPath = {
+                "icoMusicBox.png", "icoWaves.png", "icoOwl.png", "icoFire.png", "icoBell.png",
+                "icoStream.png", "icoBirds.png", "icoRain.png", "icoFrog.png", "icoMeditation.png",
+                "icoStudy.png", "icoSleep.png", "icoWhiteNoise.png"};
+
+        for (int i = 0; i < iconPath.length; i++) {
+            SpriteGameObject sgoIcon = new SpriteGameObject(
+                    game.getAssetManager().get("img/" + iconPath[i], Texture.class),
+                    40f,
+                    game.getLocationYFromTop(header + gap * (i + 1)))
+                    .setSpriteBatch(game.getSpriteBatch());
+
+            SliderX vSlider = initVolumeSlider(new Point2DFloat(750f + 32f,
+                                                                sgoIcon.getCenterLocationY()),
+                                               new Point2DFloat(32f, 32f));
+            renderablesVolumePanel.add(sgoIcon, vSlider);
+            gesturesVolumePanel.add(vSlider);
+        }
+    }
+
+    private SliderX initVolumeSlider(Point2DFloat centLoc, Point2DFloat touchMargin) {
+        final float width =
+                game.getAssetManager().get("img/rect580x16.png", Texture.class).getWidth() +
+                touchMargin.getX() * 2f;
+        final float height =
+                game.getAssetManager().get("img/rect580x16.png", Texture.class).getHeight() +
+                touchMargin.getY() * 2f;
+
+        final float locX = centLoc.getX() - width / 2f;
+        final float locY = centLoc.getY() - height / 2f;
+        final float minX = locX ;//+ touchMargin.getX();
+        final float maxX = minX+width-touchMargin.getX() * 2f;
+
+        SliderX vSlider = new SliderX(locX, locY,
+                                      width, height,
+                                      minX, maxX,
+                                      game.getSpriteBatch(), this.viewport);
+
+        vSlider
+                .setSlideBase(game.getAssetManager()
+                                  .get("img/rect580x16.png", Texture.class),
+                              0,
+                              0,
+                              true);
+        vSlider
+                .setSlideProgress(game.getAssetManager()
+                                      .get("img/rect580x16.png", Texture.class),
+                                  0,
+                                  0,
+                                  true);
+        vSlider
+                .setSlideKnob(game.getAssetManager()
+                                  .get("img/circle60.png", Texture.class),
+                              0,
+                              0,
+                              true);
+
+        vSlider
+                .setTouchHolo(game.getAssetManager()
+                                  .get("img/circle222.png", Texture.class),
+                              new Color(0xffffff4c));
+
+
+        vSlider.setColor_Base(new Color(0x09372fff));
+        vSlider.setColor_progressBar(new Color(0xff0000ff));
+        vSlider.setColor_knob(new Color(0x041d18ff));
+
+        vSlider.setEventListenerTouchDown(
+                new GameGestureListener.TouchDownEventListener() {
+                    @Override
+                    public void onEvent(float v, float v1, int i, int i1) {
+                        sthmsTimer.setTimeSec(getTimeSecFromSlider());
+                        Gdx.app.log(tag, "slide time = " + sthmsTimer.getTimerLog());
+                    }
+                });
+        vSlider.setEventListenerTouchDragged(
+                new GameGestureListener.TouchDraggedEventListener() {
+                    @Override
+                    public void onEvent(int i, int i1, int i2) {
+                        sthmsTimer.setTimeSec(getTimeSecFromSlider());
+                        Gdx.app.log(tag, "slide time = " + sthmsTimer.getTimerLog());
+                    }
+                });
+
+        return vSlider;
+
+    }
+
+    private void initVolumePanel() {
+        renderablesVolumePanel = new Array<>();
+        gesturesVolumePanel = new Array<>();
+
+        initVolumePanelBg();
+        initVolumePanelHead();
+        initVolumeIconSliders();
+    }
+
     private void initSettingVolume(Point2DFloat loc) {
         SpriteSimpleButton ssbSettingVolume = new SpriteSimpleButton(
                 game.getAssetManager().get("img/btn_volume.png", Texture.class), viewport,
@@ -233,6 +405,13 @@ class HomeScreen implements Screen, GameTimer.EventListener {
 
         ssbSettingVolume.setScale(0.1f);
         ssbSettingVolume.scale(1f, 1f, 1.4f, EaseCubicIn.getInstance());
+
+        ssbSettingVolume.setEventListenerTab(new GameGestureListener.TabEventListener() {
+            @Override
+            public void onEvent(float v, float v1, int i, int i1) {
+                showVolumePanel();
+            }
+        });
 
         renderables.add(ssbSettingVolume);
         gestureDetectables.add(ssbSettingVolume);
@@ -264,7 +443,7 @@ class HomeScreen implements Screen, GameTimer.EventListener {
      * @return return false when this button is not initialized.
      */
     private boolean hideMoreMyApps() {
-        final float movingT = 0.6f;
+        final float movingT = 0.3f;
         if (this.ssbMoreMyApps == null) {
             Gdx.app.log(tag, "Can't hide moreMyApps button, this button is not initialized");
             return false;
@@ -280,7 +459,7 @@ class HomeScreen implements Screen, GameTimer.EventListener {
      *
      * @return return false when this button is not initialized.
      */
-    private boolean displayMoreMyApps() {
+    private boolean showMoreMyApps() {
         final float movingT = 0.3f;
         if (this.ssbMoreMyApps == null) {
             Gdx.app.log(tag, "Can't display moreMyApps button, this button is not initialized");
@@ -311,12 +490,12 @@ class HomeScreen implements Screen, GameTimer.EventListener {
                                                 .get("img/timerNumColon.png", Texture.class),
                                             -1,
                                             loc.getX(), loc.getY(),
-                                            3 * 60 * 60, 0,
+                                            2 * 60 * 60, 0,
                                             game.getSpriteBatch());
-        this.sthmsTimer.setTimeSec(4034);
+        this.sthmsTimer.setTimeSec(sthmsTimer.getMaxNumSec() / 2);
         this.sthmsTimer.setColors(0xc1ccc3ff);
 
-        renderables.add(sthmsTimer);
+//        renderables.add(sthmsTimer);
     }
 
     private void initTimerSlider(Point2DFloat loc) {
@@ -368,25 +547,77 @@ class HomeScreen implements Screen, GameTimer.EventListener {
                 new GameGestureListener.TouchDownEventListener() {
                     @Override
                     public void onEvent(float v, float v1, int i, int i1) {
-//                        updateSlider();
+                        sthmsTimer.setTimeSec(getTimeSecFromSlider());
+                        Gdx.app.log(tag, "slide time = " + sthmsTimer.getTimerLog());
                     }
                 });
         playerTimerSlider.setEventListenerTouchDragged(
                 new GameGestureListener.TouchDraggedEventListener() {
                     @Override
                     public void onEvent(int i, int i1, int i2) {
-//                        updateSlider();
+                        sthmsTimer.setTimeSec(getTimeSecFromSlider());
+                        Gdx.app.log(tag, "slide time = " + sthmsTimer.getTimerLog());
                     }
                 });
 
-        renderables.add(playerTimerSlider);
-        gestureDetectables.add(playerTimerSlider);
+        setSliderPositionByTimerSec();
+
+//        renderables.add(playerTimerSlider);
+//        gestureDetectables.add(playerTimerSlider);
 
     }
 
     private void initTimerTimeSlider(Point2DFloat loc) {
-        initTimerTime(new Point2DFloat(loc.getX(), loc.getY() + 80f));
-        initTimerSlider(new Point2DFloat(loc.getX(), loc.getY()));
+        initTimerTime(new Point2DFloat(420f, loc.getY() + 80f));
+        initTimerSlider(new Point2DFloat(420f, loc.getY()));
+    }
+
+    private boolean showTimerTimeSlider() {
+        if (this.sthmsTimer == null) {
+            Gdx.app.log(tag, "sthmsTimer is null");
+            return false;
+        }
+        if (this.playerTimerSlider == null) {
+            Gdx.app.log(tag, "playerTimerSlider is null");
+            return false;
+        }
+//        sthmsTimer.setColors(0xc1ccc3ff);
+//        playerTimerSlider.setColorAComponents(0);
+        renderables.add(sthmsTimer, playerTimerSlider);
+        gestureDetectables.add(playerTimerSlider);
+
+        return true;
+    }
+
+    private boolean hideTimerTimeSlider() {
+        if (this.sthmsTimer == null) {
+            Gdx.app.log(tag, "sthmsTimer is null");
+            return false;
+        }
+//        sthmsTimer.setColors(0xc1ccc300);
+        safeRemoveRenderable(sthmsTimer);
+        safeRemoveRenderable(playerTimerSlider);
+        gestureDetectables.removeValue(playerTimerSlider, true);
+        return true;
+    }
+
+    private int getTimeSecFromSlider() {
+        int ret = (int) ((float) (sthmsTimer.getMaxNumSec() -
+                                  sthmsTimer.getMinNumSec()) *
+                         playerTimerSlider.getPositionXRatio()) +
+                  sthmsTimer.getMinNumSec();
+        return ret;
+    }
+
+    private void setSliderPositionByTimerSec() {
+        if (playerTimerSlider == null) {
+            Gdx.app.log(tag, "playerTimerSlider is null");
+            return;
+        }
+        playerTimerSlider.setPositionXRatio((float) sthmsTimer.getTimeSec() /
+                                            (float) (sthmsTimer.getMaxNumSec() -
+                                                     sthmsTimer.getMinNumSec()));
+        playerTimerSlider.updatePosion();
     }
 
     private void initCompassSmall(Point2DFloat loc) {
@@ -398,6 +629,24 @@ class HomeScreen implements Screen, GameTimer.EventListener {
         sgoCompassSmall.setColorA(0.1f);
         sgoCompassSmall.paintA(1f, 2f);
         renderables.add(sgoCompassSmall);
+    }
+
+    private boolean showCompassSmall() {
+        if (sgoCompassSmall == null) {
+            Gdx.app.log(tag, "compass small is null");
+            return false;
+        }
+        sgoCompassSmall.moveX(400f, 0.15f);
+        return true;
+    }
+
+    private boolean hideCompassSmall() {
+        if (sgoCompassSmall == null) {
+            Gdx.app.log(tag, "compass small is null");
+            return false;
+        }
+        sgoCompassSmall.moveX(game.getViewportWidth(), 0.15f);
+        return true;
     }
 
     private void initSettingPanel() {

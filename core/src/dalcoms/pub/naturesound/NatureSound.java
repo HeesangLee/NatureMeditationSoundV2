@@ -190,6 +190,23 @@ public class NatureSound extends Game {
         assetManager.load("img/circle60.png", Texture.class, para);
         assetManager.load("img/rect580x16.png", Texture.class, para);
 
+        assetManager.load("img/textVolumeSetting.png", Texture.class, para);
+        assetManager.load("img/icoWhiteNoise.png", Texture.class, para);
+        assetManager.load("img/icoSleep.png", Texture.class, para);
+        assetManager.load("img/icoStudy.png", Texture.class, para);
+        assetManager.load("img/icoMeditation.png", Texture.class, para);
+        assetManager.load("img/icoFrog.png", Texture.class, para);
+        assetManager.load("img/icoRain.png", Texture.class, para);
+        assetManager.load("img/icoBirds.png", Texture.class, para);
+        assetManager.load("img/icoStream.png", Texture.class, para);
+        assetManager.load("img/icoBell.png", Texture.class, para);
+        assetManager.load("img/icoFire.png", Texture.class, para);
+        assetManager.load("img/icoOwl.png", Texture.class, para);
+        assetManager.load("img/icoWaves.png", Texture.class, para);
+        assetManager.load("img/icoMusicBox.png", Texture.class, para);
+        assetManager.load("img/rect1080x220.png", Texture.class, para);
+        assetManager.load("img/btn_cancle.png", Texture.class, para);
+        assetManager.load("img/icoVolume.png", Texture.class, para);
 
         loadAssetMyAds();
 

@@ -9,6 +9,7 @@ import com.badlogic.gdx.utils.Array;
 import dalcoms.lib.libgdx.Renderable;
 import dalcoms.lib.libgdx.SpriteGameObject;
 import dalcoms.lib.libgdx.SpriteNumber;
+import dalcoms.lib.libgdx.easingfunctions.IEasingFunction;
 
 public class SpriteTimeHMS implements Renderable {
     final String tag = "SpriteTimeHMS";
@@ -152,6 +153,7 @@ public class SpriteTimeHMS implements Renderable {
         snSecond1.setColor(new Color(colorNum));
     }
 
+
     private int getRed(int color) {
         return (color * 0xff0000) >>> (8 * 3);
     }
@@ -222,6 +224,12 @@ public class SpriteTimeHMS implements Renderable {
         setColorByRange();
     }
 
+    public String getTimerLog() {
+        return "(hh:mm:ss)" + snHour10.getNumber() + snHour1.getNumber() + ":" +
+               snMinute10.getNumber() + snMinute1.getNumber() + ":" +
+               snSecond10.getNumber() + snSecond10.getNumber();
+    }
+
     public float getLocationX() {
         return locationX;
     }
@@ -253,6 +261,7 @@ public class SpriteTimeHMS implements Renderable {
     public void setMinNumSec(int minNumSec) {
         this.minNumSec = minNumSec;
     }
+
 
     @Override
     public void render(float delta) {
