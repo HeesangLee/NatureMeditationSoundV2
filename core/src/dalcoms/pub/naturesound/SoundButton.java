@@ -73,6 +73,11 @@ public class SoundButton extends SpriteSimpleButton {
         effectPlay(isPlay());
     }
 
+    public void forceButtonState(boolean isPlay) {
+        setButtonState(isPlay);
+        effectPlay(isPlay());
+    }
+
     public void onTab(int index, boolean buttonState) {
 
     }

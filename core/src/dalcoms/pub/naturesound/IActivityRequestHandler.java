@@ -31,4 +31,16 @@ public interface IActivityRequestHandler {
 
     void playMusic(int index, boolean isPlay, float volume);
 
+    int getTimerTimeSec();
+
+    void setTimerTimeSec(int timeSec);
+
+    void setTimerTimeSec(int timeSec, boolean timerMode);
+
+    void setTimerMode(boolean timerMode);//false : loop, true : timer mode
+
+    boolean isTimerMode();
+
+    void setVolume(int soundIndex, float volume);
+
 }

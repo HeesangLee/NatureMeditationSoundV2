@@ -11,18 +11,13 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-import java.util.List;
-
 import dalcoms.lib.libgdx.GameGestureListener;
-import dalcoms.lib.libgdx.GameObject;
 import dalcoms.lib.libgdx.GameTimer;
 import dalcoms.lib.libgdx.IGestureInput;
 import dalcoms.lib.libgdx.Point2DFloat;
@@ -30,17 +25,8 @@ import dalcoms.lib.libgdx.Renderable;
 import dalcoms.lib.libgdx.SpriteGameObject;
 import dalcoms.lib.libgdx.SpriteSimpleButton;
 import dalcoms.lib.libgdx.SpriteSimpleToggleButton;
-import dalcoms.lib.libgdx.Var4TimePair;
-import dalcoms.lib.libgdx.VariationPerTime;
-import dalcoms.lib.libgdx.easingfunctions.EaseBounceOut;
-import dalcoms.lib.libgdx.easingfunctions.EaseCircIn;
-import dalcoms.lib.libgdx.easingfunctions.EaseCircOut;
 import dalcoms.lib.libgdx.easingfunctions.EaseCubicIn;
-import dalcoms.lib.libgdx.easingfunctions.EaseCubicInOut;
 import dalcoms.lib.libgdx.easingfunctions.EaseElasticInOut;
-import dalcoms.lib.libgdx.easingfunctions.EaseElasticOut;
-import dalcoms.lib.libgdx.easingfunctions.EaseLinear;
-import dalcoms.lib.libgdx.easingfunctions.IEasingFunction;
 
 class HomeScreen implements Screen, GameTimer.EventListener {
     final String tag = "Home Screen";
@@ -56,6 +42,12 @@ class HomeScreen implements Screen, GameTimer.EventListener {
     Array<Renderable> renderablesVolumePanel;
     Array<IGestureInput> gesturesVolumePanel;
 
+    // soundVolumes array size : 221122 기준 13 지만 어레이 사이즈는 21개로 여유롭게 설정
+    // 어짜피 설정, 참조하는 index 는 정해져 있으니 상관 없음.
+    // 혹시 모를 확장에 대비하여 크게 설정
+    float[] soundVolumes =
+            {1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f};
+
     private boolean flagFirstGame = true;
     private boolean checkAdmobAdsLoaded = false;
     private boolean isShowMyScreenAdsOn = false;
@@ -65,10 +57,15 @@ class HomeScreen implements Screen, GameTimer.EventListener {
     SpriteSimpleButton ssbMyScreenAdsDisplay, ssbMyScreenAdsCancelBtn;
     SpriteSimpleButton ssbMoreMyApps;
     SpriteGameObject sgoMyScreenAdsCancelBg;
+    SpriteSimpleToggleButton sstbTimer;
     SpriteTimeHMS sthmsTimer;
     SliderX playerTimerSlider;
     SpriteGameObject sgoCompassSmall;
     Array<SoundButton> soundButtons;
+
+    private boolean timerMode = false;
+    private final int maxTimerTimeSec = 7200; //2*60*60 : 2hours
+    private final int defaultTimerTimeSec = 3600; // 1hour
 
     private int exeCount = 0;
 
@@ -200,7 +197,11 @@ class HomeScreen implements Screen, GameTimer.EventListener {
     }
 
     private void initSettingTimer(Point2DFloat loc) {
-        final SpriteSimpleToggleButton sstbTimer = new SpriteSimpleToggleButton(
+
+//        game.getLauncherHandler().setTimerTimeSec(defaultTimerTimeSec);
+        setTimerToDefault(true);
+
+        sstbTimer = new SpriteSimpleToggleButton(
                 game.getAssetManager().get("img/btn_loop.png", Texture.class),
                 game.getAssetManager().get("img/btn_timer.png", Texture.class),
                 viewport, this.game.getSpriteBatch(),
@@ -216,22 +217,43 @@ class HomeScreen implements Screen, GameTimer.EventListener {
                 if (sstbTimer.isToggleOnTap()) {
                     Gdx.app.log(tag, "sstbTimer is toggled to " + sstbTimer.getBtnToggleState());
                 }
-                if (sstbTimer.getBtnToggleState() == SpriteSimpleToggleButton.ButtonState.TOGGLED) {
-                    showTimerTimeSlider();
-                    hideMoreMyApps();
-                    hideCompassSmall();
-                } else {
-                    hideTimerTimeSlider();
-                    showMoreMyApps();
-                    showCompassSmall();
-                }
+                setTimerToDefault(true);
+
+                onTimerMode(sstbTimer.getBtnToggleState() ==
+                            SpriteSimpleToggleButton.ButtonState.TOGGLED, true);
             }
         });
-
         renderables.add(sstbTimer);
         gestureDetectables.add(sstbTimer);
     }
 
+    private void onTimerMode(boolean timerMode, boolean isSetService) {
+        setTimerMode(timerMode, isSetService);
+        if (timerMode) {
+            showTimerTimeSlider();
+            hideMoreMyApps();
+            hideCompassSmall();
+        } else {
+            hideTimerTimeSlider();
+            showMoreMyApps();
+            showCompassSmall();
+        }
+    }
+
+    public boolean isTimerMode() {
+        return timerMode;
+    }
+
+    public void setTimerMode(boolean timerMode) {
+        this.timerMode = timerMode;
+    }
+
+    public void setTimerMode(boolean timerMode, boolean isSetService) {
+        this.timerMode = timerMode;
+        if (isSetService) {
+            game.getLauncherHandler().setTimerMode(timerMode);
+        }
+    }
 
     private void showVolumePanel() {
         for (Renderable renderable : renderablesVolumePanel) {
@@ -298,6 +320,7 @@ class HomeScreen implements Screen, GameTimer.EventListener {
         gestureDetectablesTop.add(ssbCancel);
     }
 
+
     private void initVolumeIconSliders() {
         final float header = 220f;
         final float gap = 12f + 120f;
@@ -315,13 +338,13 @@ class HomeScreen implements Screen, GameTimer.EventListener {
 
             SliderX vSlider = initVolumeSlider(new Point2DFloat(750f + 32f,
                                                                 sgoIcon.getCenterLocationY()),
-                                               new Point2DFloat(32f, 32f));
+                                               new Point2DFloat(32f, 32f), i);
             renderablesVolumePanel.add(sgoIcon, vSlider);
             gesturesVolumePanel.add(vSlider);
         }
     }
 
-    private SliderX initVolumeSlider(Point2DFloat centLoc, Point2DFloat touchMargin) {
+    private SliderX initVolumeSlider(Point2DFloat centLoc, Point2DFloat touchMargin, int index) {
         final float width =
                 game.getAssetManager().get("img/rect580x16.png", Texture.class).getWidth() +
                 touchMargin.getX() * 2f;
@@ -331,14 +354,14 @@ class HomeScreen implements Screen, GameTimer.EventListener {
 
         final float locX = centLoc.getX() - width / 2f;
         final float locY = centLoc.getY() - height / 2f;
-        final float minX = locX ;//+ touchMargin.getX();
-        final float maxX = minX+width-touchMargin.getX() * 2f;
+        final float minX = locX;//+ touchMargin.getX();
+        final float maxX = minX + width - touchMargin.getX() * 2f;
 
-        SliderX vSlider = new SliderX(locX, locY,
-                                      width, height,
-                                      minX, maxX,
-                                      game.getSpriteBatch(), this.viewport);
-
+        final SliderX vSlider = new SliderX(locX, locY,
+                                            width, height,
+                                            minX, maxX,
+                                            game.getSpriteBatch(), this.viewport);
+        vSlider.setIndex(index);
         vSlider
                 .setSlideBase(game.getAssetManager()
                                   .get("img/rect580x16.png", Texture.class),
@@ -364,29 +387,59 @@ class HomeScreen implements Screen, GameTimer.EventListener {
                               new Color(0xffffff4c));
 
 
-        vSlider.setColor_Base(new Color(0x09372fff));
-        vSlider.setColor_progressBar(new Color(0xff0000ff));
+        vSlider.setColor_Base(new Color(0x5b6f6cff));
+        vSlider.setColor_progressBar(new Color(0x041d18ff));
         vSlider.setColor_knob(new Color(0x041d18ff));
+
+        vSlider.setPositionXRatio(getSoundVolume(index), true);
 
         vSlider.setEventListenerTouchDown(
                 new GameGestureListener.TouchDownEventListener() {
                     @Override
                     public void onEvent(float v, float v1, int i, int i1) {
-                        sthmsTimer.setTimeSec(getTimeSecFromSlider());
-                        Gdx.app.log(tag, "slide time = " + sthmsTimer.getTimerLog());
+                        setSoundVolme(vSlider.getIndex(), vSlider.getPositionXRatio());
+                        Gdx.app.log(tag,
+                                    "vSlider " + vSlider.getIndex() + " : " +
+                                    getSoundVolume(vSlider.getIndex()));
                     }
                 });
         vSlider.setEventListenerTouchDragged(
                 new GameGestureListener.TouchDraggedEventListener() {
                     @Override
                     public void onEvent(int i, int i1, int i2) {
-                        sthmsTimer.setTimeSec(getTimeSecFromSlider());
-                        Gdx.app.log(tag, "slide time = " + sthmsTimer.getTimerLog());
+                        setSoundVolme(vSlider.getIndex(), vSlider.getPositionXRatio());
+                        Gdx.app.log(tag,
+                                    "vSlider " + vSlider.getIndex() + " : " +
+                                    getSoundVolume(vSlider.getIndex()));
                     }
                 });
 
         return vSlider;
 
+    }
+
+    private void setSoundVolme(int soundIndex, float volume) {
+        if (soundIndex > this.soundVolumes.length - 1) {
+            Gdx.app.log(tag,
+                        "setSoundVolme : Out of index, max index =  " + (soundVolumes.length - 1) +
+                        ", index = " + soundIndex);
+        } else {
+            this.soundVolumes[soundIndex] = volume;
+            game.getLauncherHandler().setVolume(soundIndex, volume);
+        }
+    }
+
+    private float getSoundVolume(int soundIndex) {
+        float ret = 0f;
+        if (soundIndex > this.soundVolumes.length - 1) {
+            Gdx.app.log(tag,
+                        "setSoundVolme : Out of index, max index =  " + (soundVolumes.length - 1) +
+                        ", index = " + soundIndex);
+        } else {
+            ret = this.soundVolumes[soundIndex];
+        }
+
+        return ret;
     }
 
     private void initVolumePanel() {
@@ -472,6 +525,25 @@ class HomeScreen implements Screen, GameTimer.EventListener {
         return true;
     }
 
+    private void setTimerToDefault(boolean isSetService) {
+        setTimerTime(defaultTimerTimeSec);
+        if (isSetService) {
+            game.getLauncherHandler().setTimerTimeSec(defaultTimerTimeSec);
+        }
+    }
+
+    private void setTimerTime(int time) {
+
+        if (this.sthmsTimer != null) {
+            this.sthmsTimer.setTimeSec(time);
+            if (this.playerTimerSlider != null) {
+                setSliderPositionByTimerSec();
+            }
+        } else {
+            Gdx.app.log(tag, "setTimerToDefault() : sthmsTimer is null");
+        }
+    }
+
     private void initTimerTime(Point2DFloat loc) {
         Array<Texture> nums = new Array<>();
         nums.add(game.getAssetManager().get("img/timerNum0.png", Texture.class));
@@ -490,9 +562,10 @@ class HomeScreen implements Screen, GameTimer.EventListener {
                                                 .get("img/timerNumColon.png", Texture.class),
                                             -1,
                                             loc.getX(), loc.getY(),
-                                            2 * 60 * 60, 0,
+                                            this.maxTimerTimeSec, 0,
                                             game.getSpriteBatch());
-        this.sthmsTimer.setTimeSec(sthmsTimer.getMaxNumSec() / 2);
+//        this.sthmsTimer.setTimeSec(defaultTimerTimeSec);
+        setTimerToDefault(true);
         this.sthmsTimer.setColors(0xc1ccc3ff);
 
 //        renderables.add(sthmsTimer);
@@ -547,16 +620,14 @@ class HomeScreen implements Screen, GameTimer.EventListener {
                 new GameGestureListener.TouchDownEventListener() {
                     @Override
                     public void onEvent(float v, float v1, int i, int i1) {
-                        sthmsTimer.setTimeSec(getTimeSecFromSlider());
-                        Gdx.app.log(tag, "slide time = " + sthmsTimer.getTimerLog());
+                        setTimerTimerBySlider("slider touch down");
                     }
                 });
         playerTimerSlider.setEventListenerTouchDragged(
                 new GameGestureListener.TouchDraggedEventListener() {
                     @Override
                     public void onEvent(int i, int i1, int i2) {
-                        sthmsTimer.setTimeSec(getTimeSecFromSlider());
-                        Gdx.app.log(tag, "slide time = " + sthmsTimer.getTimerLog());
+                        setTimerTimerBySlider("slider touch dragged");
                     }
                 });
 
@@ -565,6 +636,13 @@ class HomeScreen implements Screen, GameTimer.EventListener {
 //        renderables.add(playerTimerSlider);
 //        gestureDetectables.add(playerTimerSlider);
 
+    }
+
+    private void setTimerTimerBySlider(String logMsg) {
+        int timeSec = getTimeSecFromSlider();
+        sthmsTimer.setTimeSec(timeSec);
+        game.getLauncherHandler().setTimerTimeSec(timeSec, true);
+        Gdx.app.log(tag, logMsg + " slide time = " + sthmsTimer.getTimerLog());
     }
 
     private void initTimerTimeSlider(Point2DFloat loc) {
@@ -694,7 +772,8 @@ class HomeScreen implements Screen, GameTimer.EventListener {
                     @Override
                     public void onTab(int index, boolean buttonState) {
                         super.onTab(index, buttonState);
-                        game.getLauncherHandler().playMusic(index, buttonState, 1f);
+                        game.getLauncherHandler()
+                            .playMusic(index, buttonState, getSoundVolume(index));
                         Gdx.app.log(tag, "SoundButton " + index + " : " + buttonState);
                     }
                 };
@@ -720,7 +799,8 @@ class HomeScreen implements Screen, GameTimer.EventListener {
                         @Override
                         public void onTab(int index, boolean buttonState) {
                             super.onTab(index, buttonState);
-                            game.getLauncherHandler().playMusic(index, buttonState, 1f);
+                            game.getLauncherHandler()
+                                .playMusic(index, buttonState, getSoundVolume(index));
                             //get volume
                             Gdx.app.log(tag, "SoundButton " + index + " : " + buttonState);
                         }
@@ -937,7 +1017,7 @@ class HomeScreen implements Screen, GameTimer.EventListener {
 
     @Override
     public void onTimer1sec(float v, int i) {
-        Gdx.app.log(tag, "onTimer1sec");
+//        Gdx.app.log(tag, "onTimer1sec");
         if (isCompassAvailable()) {
             checkCompass(1f);
         }
@@ -945,13 +1025,13 @@ class HomeScreen implements Screen, GameTimer.EventListener {
 
     @Override
     public void onTimer500msec(float v, int i) {
-        Gdx.app.log(tag, "onTimer500msec");
+//        Gdx.app.log(tag, "onTimer500msec");
 
     }
 
     @Override
     public void onTimer250msec(float v, int i) {
-        Gdx.app.log(tag, "onTimer250msec");
+//        Gdx.app.log(tag, "onTimer250msec");
         if (isShowMyScreenAdsOn) {
             if (myScreenAdsOnTime < 0) {
                 hideMyScreenAds();
@@ -959,6 +1039,29 @@ class HomeScreen implements Screen, GameTimer.EventListener {
             } else {
                 myScreenAdsOnTime = myScreenAdsOnTime - 0.25f;
             }
+        }
+
+        if (isTimerMode()) {//check timer time from service
+            int timerFromService = game.getLauncherHandler().getTimerTimeSec();
+            setTimerTime(timerFromService);
+            if (timerFromService == 0 && !game.getLauncherHandler().isTimerMode()) {
+                onTimerEnd();
+            }
+        }
+    }
+
+    private void onTimerEnd() {
+        // set button to loop
+        setTimerMode(false);
+        this.sstbTimer.setBtnToggleState(SpriteSimpleToggleButton.ButtonState.DEFAULT);
+        this.sstbTimer.scale(1f, 1f, 0.1f);
+        onTimerMode(false, false);
+        offAllSoundButtonState();
+    }
+
+    private void offAllSoundButtonState() {
+        for (SoundButton sndBtn : soundButtons) {
+            sndBtn.forceButtonState(false);
         }
     }
 

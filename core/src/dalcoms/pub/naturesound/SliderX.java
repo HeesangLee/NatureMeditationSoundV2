@@ -239,6 +239,13 @@ public class SliderX extends GameObject {
         this.positionXRatio = positionXRatio;
     }
 
+    public void setPositionXRatio(float positionXRatio, boolean isUpdate) {
+        this.positionXRatio = positionXRatio;
+        if (isUpdate) {
+            this.updatePosion();
+        }
+    }
+
     public void setPositionXRatioByTouchPosition(float x) {
         if (x <= minX) {
             setPositionXRatio(0f);
@@ -255,7 +262,7 @@ public class SliderX extends GameObject {
         setProgress();
     }
 
-    public void updatePosion(){
+    public void updatePosion() {
         setKnobPositionX();
         setProgress();
     }

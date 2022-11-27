@@ -5,18 +5,17 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
-import android.content.res.AssetFileDescriptor;
 import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 
-import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
@@ -25,8 +24,20 @@ public class MyService extends Service {
     private static final String notiChId = "dalcoms.naturesound";
     private static final int notificationId = 8641;
 
+    private int timeSec = 0;
+    private boolean timerMode = false;
+    Timer timer = new Timer();
+    TimerTask timerTask = new TimerTask() {
+        @Override
+        public void run() {
+            onTimerTask();
+        }
+    };
+
     private final IBinder mBinder = new LocalBinder();
+
     MediaPlayer mpMusicBox;
+
     int[] musicBoxIds = {
             R.raw.musicbox_1, R.raw.musicbox_2, R.raw.musicbox_3, R.raw.musicbox_4,
             R.raw.musicbox_5, R.raw.musicbox_6, R.raw.musicbox_7, R.raw.musicbox_8,
@@ -55,6 +66,7 @@ public class MyService extends Service {
         super.onCreate();
         initMediaPlayer();
         createNotificationChannel();
+        initTimer();
         Log.d(tag, "onCreate");
     }
 
@@ -79,6 +91,12 @@ public class MyService extends Service {
         if (mpMusicBox != null) {
             mpMusicBox.release();
         }
+        for (MediaPlayer mediaPlayer : mpSounds) {
+            mediaPlayer.release();
+        }
+        if (timer != null) {
+            timer.cancel();
+        }
         super.onDestroy();
 
     }
@@ -87,6 +105,10 @@ public class MyService extends Service {
         musicBoxIndex = musicBoxIndex < musicBoxIds.length - 1 ? musicBoxIndex + 1 : 0;
         Log.d(tag, "music box index = " + musicBoxIndex);
         return musicBoxIndex;
+    }
+
+    private void initTimer() {
+        timer.schedule(timerTask, 0, 1000);
     }
 
     private void initMediaPlayer() {
@@ -196,6 +218,69 @@ public class MyService extends Service {
 
     public void stopAllMusic() {
         mpMusicBox.stop();
+        for (MediaPlayer mpSound : mpSounds) {
+            mpSound.stop();
+        }
+    }
+
+    public void pauseAllMusic() {
+        mpMusicBox.pause();
+        mpMusicBox.seekTo(0);
+        for (MediaPlayer mpSound : mpSounds) {
+            mpSound.pause();
+            mpSound.seekTo(0);
+        }
+    }
+
+    int getTimerTimeSec() {
+        return timeSec;
+    }
+
+    void setTimerTimeSec(int timeSec) {
+        this.timeSec = timeSec;
+    }
+
+    void setTimerTimeSec(int timeSec, boolean timerMode) {
+        this.timeSec = timeSec;
+        setTimerMode(timerMode);
+    }
+
+    void setTimerMode(boolean timerMode) {//false : loop, true : timer mode
+        this.timerMode = timerMode;
+
+    }
+
+    void onTimerTask() {
+        Log.d(tag, "On TimerTask : " + timeSec + "sec");
+        if (isTimerMode()) {
+            checkTimer();
+        }
+    }
+
+    void checkTimer() {
+        if (timeSec > 0) {
+            this.timeSec--;
+            Log.d(tag, "On checkTimer : " + timeSec + "sec");
+        } else {
+            onTimerEnd();
+        }
+    }
+
+    private void onTimerEnd() {
+        setTimerMode(false);//set the mode to loop
+        pauseAllMusic();
+    }
+
+    boolean isTimerMode() {
+        return timerMode;
+    }
+
+    void setVolume(int soundIndex, float volume) {
+        if (soundIndex == 0) {//music box
+            mpMusicBox.setVolume(volume, volume);
+        } else {//sounds
+            mpSounds.get(soundIndex - 1).setVolume(volume, volume);
+        }
     }
 
     class LocalBinder extends Binder {

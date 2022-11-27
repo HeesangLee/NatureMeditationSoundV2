@@ -681,6 +681,36 @@ public class AndroidLauncher extends AndroidApplication implements IActivityRequ
         myService.playMusic(index, isPlay, volume);
     }
 
+    @Override
+    public int getTimerTimeSec() {
+        return myService.getTimerTimeSec();
+    }
+
+    @Override
+    public void setTimerTimeSec(int timeSec) {
+        myService.setTimerTimeSec(timeSec);
+    }
+
+    @Override
+    public void setTimerTimeSec(int timeSec, boolean timerMode) {
+        myService.setTimerTimeSec(timeSec,timerMode);
+    }
+
+    @Override
+    public void setTimerMode(boolean timerMode) {
+        myService.setTimerMode(timerMode);
+    }
+
+    @Override
+    public boolean isTimerMode() {
+        return myService.isTimerMode();
+    }
+
+    @Override
+    public void setVolume(int soundIndex, float volume) {
+        myService.setVolume(soundIndex, volume);
+    }
+
     private void doMoreMyApp() {
 
         Intent intent = new Intent(Intent.ACTION_VIEW);
