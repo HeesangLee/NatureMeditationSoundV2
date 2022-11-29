@@ -198,37 +198,57 @@ public class MyService extends Service {
 
         if (index == 0) {//music box
             if (isPlay) {
-                mpMusicBox.start();
-                mpMusicBox.setVolume(volume, volume);
+                if(!mpMusicBox.isPlaying()){
+                    mpMusicBox.start();
+                    mpMusicBox.setVolume(volume, volume);
+                }
+
             } else {
-                mpMusicBox.pause();
+                if(mpMusicBox.isPlaying()){
+                    mpMusicBox.pause();
+                }
                 //music box : pause -> start
                 //sounds : pause -> seek to zeo -> start
             }
         } else {
             if (isPlay) {
-                mpSounds.get(index - 1).start();
-                mpSounds.get(index - 1).setVolume(volume, volume);
+                if(!mpSounds.get(index - 1).isPlaying()){
+                    mpSounds.get(index - 1).start();
+                    mpSounds.get(index - 1).setVolume(volume, volume);
+                }
             } else {
-                mpSounds.get(index - 1).pause();
-                mpSounds.get(index - 1).seekTo(0);
+                if(mpSounds.get(index - 1).isPlaying()){
+                    mpSounds.get(index - 1).pause();
+                    mpSounds.get(index - 1).seekTo(0);
+                }
             }
         }
     }
 
     public void stopAllMusic() {
-        mpMusicBox.stop();
+        if(mpMusicBox.isPlaying()){
+            mpMusicBox.stop();
+        }
+
         for (MediaPlayer mpSound : mpSounds) {
-            mpSound.stop();
+            if(mpSound.isPlaying()){
+                mpSound.stop();
+            }
+
         }
     }
 
     public void pauseAllMusic() {
-        mpMusicBox.pause();
-        mpMusicBox.seekTo(0);
+        if(mpMusicBox.isPlaying()){
+            mpMusicBox.pause();
+            mpMusicBox.seekTo(0);
+        }
+
         for (MediaPlayer mpSound : mpSounds) {
-            mpSound.pause();
-            mpSound.seekTo(0);
+            if(mpSound.isPlaying()){
+                mpSound.pause();
+                mpSound.seekTo(0);
+            }
         }
     }
 
