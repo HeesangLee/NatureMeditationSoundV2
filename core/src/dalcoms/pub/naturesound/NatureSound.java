@@ -208,6 +208,8 @@ public class NatureSound extends Game {
         assetManager.load("img/btn_cancle.png", Texture.class, para);
         assetManager.load("img/icoVolume.png", Texture.class, para);
 
+        assetManager.load("img/soundAdIcon.png", Texture.class, para);
+
         loadAssetMyAds();
 
 //        loadHomeScreenSound();
@@ -224,7 +226,7 @@ public class NatureSound extends Game {
     }
 
     public enum ADS {
-        ADMOB, PINDOT, DOTSUP, BRAINWAVE, SKINVIBOR, MEGABRICKS, TEETHROULETTE,
+        ADMOB, PINDOT, DOTSUP, BRAINWAVE, SKINVIBOR, MEGABRICKS, TEETHROULETTE, FARTBUTTON,
     }
 
     public String getMyBannerTexturePath(ADS ads) {
@@ -275,6 +277,9 @@ public class NatureSound extends Game {
             case TEETHROULETTE:
                 texturePath = "img/screenAdsTeethRoulette.png";
                 break;
+            case FARTBUTTON:
+                texturePath = "img/screenAdsFartButton.png";
+                break;
             default:
                 Gdx.app.log(tag, "getMyBannerTexturePath() : " + ads.name() +
                                  " is not defined. so return default");
@@ -305,6 +310,9 @@ public class NatureSound extends Game {
             case TEETHROULETTE:
                 texturePath = "dalcoms.fun.teethroulette";
                 break;
+            case FARTBUTTON:
+                texturePath = "dalcoms.fun.fartsoundbutton";
+                break;
             default:
                 Gdx.app.log(tag, "getMyAdsUri() : " + ads.name() +
                                  " is not defined. so return default");
@@ -320,14 +328,16 @@ public class NatureSound extends Game {
 
         if (rand < 0.15f) {
             randomAds = ADS.DOTSUP;
-        } else if (rand < 0.3f) {
+        } else if (rand < 0.25f) {
             randomAds = ADS.PINDOT;
         } else if (rand < 0.4f) {
             randomAds = ADS.BRAINWAVE;
         } else if (rand < 0.6f) {
             randomAds = ADS.SKINVIBOR;
-        } else if (rand < 0.76f) {
+        } else if (rand < 0.8f) {
             randomAds = ADS.MEGABRICKS;
+        } else if (rand < 0.95f) {
+            randomAds = ADS.FARTBUTTON;
         } else {
             randomAds = ADS.TEETHROULETTE;
         }
@@ -340,7 +350,7 @@ public class NatureSound extends Game {
         final ADS AdsList[] =
                 {
                         ADS.MEGABRICKS, ADS.PINDOT, ADS.DOTSUP, ADS.SKINVIBOR, ADS.BRAINWAVE,
-                        ADS.TEETHROULETTE};
+                        ADS.TEETHROULETTE, ADS.FARTBUTTON};
         ADS ret = AdsList[seqAdsIndex % AdsList.length];
         seqAdsIndex++;
         return ret;
@@ -357,6 +367,7 @@ public class NatureSound extends Game {
         assetManager.load("img/screenAdsSkinVibor.png", Texture.class, para);
         assetManager.load("img/screenAdsMegaBricks.png", Texture.class, para);
         assetManager.load("img/screenAdsTeethRoulette.png", Texture.class, para);
+        assetManager.load("img/screenAdsFartButton.png", Texture.class, para);
     }
 
     public void loadAssetGameScreen() {

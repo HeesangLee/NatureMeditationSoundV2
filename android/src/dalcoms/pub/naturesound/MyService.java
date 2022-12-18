@@ -5,10 +5,14 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.media.AudioAttributes;
+import android.media.AudioFocusRequest;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -55,6 +59,9 @@ public class MyService extends Service {
             R.raw.bg_rain, R.raw.bg_frog, R.raw.bg_meditation,
             R.raw.bg_study, R.raw.bg_sleep, R.raw.bg_white_noise
     };
+    AudioManager audioManager;
+    AudioFocusRequest focusRequest;
+
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -97,6 +104,8 @@ public class MyService extends Service {
         if (timer != null) {
             timer.cancel();
         }
+
+        audioManager.abandonAudioFocusRequest(focusRequest);
         super.onDestroy();
 
     }
@@ -111,10 +120,31 @@ public class MyService extends Service {
         timer.schedule(timerTask, 0, 1000);
     }
 
+    private void requestAudioFocus() {
+        audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+        focusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                .setAudioAttributes(new AudioAttributes.Builder()
+                                            .setUsage(AudioAttributes.USAGE_MEDIA)
+                                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                                            .build())
+                .build();
+        int res = audioManager.requestAudioFocus(focusRequest);
+        Log.d(tag, "Request audio focus : " + res);
+    }
+
+
     private void initMediaPlayer() {
+        requestAudioFocus();
+
         musicBoxIndex = new Random().nextInt(musicBoxIds.length - 1);
         Log.d(tag, "music box index = " + musicBoxIndex);
+
         mpMusicBox = MediaPlayer.create(getApplicationContext(), musicBoxIds[musicBoxIndex]);
+        mpMusicBox.setAudioAttributes(
+                new AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .build());
         mpMusicBox.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
@@ -122,9 +152,15 @@ public class MyService extends Service {
                 playNextMusicBox();
             }
         });
+
         mpSounds = new ArrayList<>();
-        for (int i = 0; i < soundIds.length; i++) {
-            MediaPlayer mp = MediaPlayer.create(getApplicationContext(), soundIds[i]);
+        for (int soundId : soundIds) {
+            MediaPlayer mp = MediaPlayer.create(getApplicationContext(), soundId);
+            mp.setAudioAttributes(
+                    new AudioAttributes.Builder()
+                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                            .setUsage(AudioAttributes.USAGE_MEDIA)
+                            .build());
             mp.setLooping(true);
             mpSounds.add(mp);
         }
@@ -133,6 +169,11 @@ public class MyService extends Service {
     private void playNextMusicBox() {
         mpMusicBox = MediaPlayer
                 .create(getApplicationContext(), musicBoxIds[getNextMusicBoxIndex()]);
+        mpMusicBox.setAudioAttributes(
+                new AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .build());
         mpMusicBox.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
@@ -198,13 +239,12 @@ public class MyService extends Service {
 
         if (index == 0) {//music box
             if (isPlay) {
-                if(!mpMusicBox.isPlaying()){
+                if (!mpMusicBox.isPlaying()) {
                     mpMusicBox.start();
                     mpMusicBox.setVolume(volume, volume);
                 }
-
             } else {
-                if(mpMusicBox.isPlaying()){
+                if (mpMusicBox.isPlaying()) {
                     mpMusicBox.pause();
                 }
                 //music box : pause -> start
@@ -212,12 +252,12 @@ public class MyService extends Service {
             }
         } else {
             if (isPlay) {
-                if(!mpSounds.get(index - 1).isPlaying()){
+                if (!mpSounds.get(index - 1).isPlaying()) {
                     mpSounds.get(index - 1).start();
                     mpSounds.get(index - 1).setVolume(volume, volume);
                 }
             } else {
-                if(mpSounds.get(index - 1).isPlaying()){
+                if (mpSounds.get(index - 1).isPlaying()) {
                     mpSounds.get(index - 1).pause();
                     mpSounds.get(index - 1).seekTo(0);
                 }
@@ -226,12 +266,12 @@ public class MyService extends Service {
     }
 
     public void stopAllMusic() {
-        if(mpMusicBox.isPlaying()){
+        if (mpMusicBox.isPlaying()) {
             mpMusicBox.stop();
         }
 
         for (MediaPlayer mpSound : mpSounds) {
-            if(mpSound.isPlaying()){
+            if (mpSound.isPlaying()) {
                 mpSound.stop();
             }
 
@@ -239,13 +279,13 @@ public class MyService extends Service {
     }
 
     public void pauseAllMusic() {
-        if(mpMusicBox.isPlaying()){
+        if (mpMusicBox.isPlaying()) {
             mpMusicBox.pause();
             mpMusicBox.seekTo(0);
         }
 
         for (MediaPlayer mpSound : mpSounds) {
-            if(mpSound.isPlaying()){
+            if (mpSound.isPlaying()) {
                 mpSound.pause();
                 mpSound.seekTo(0);
             }
@@ -301,6 +341,7 @@ public class MyService extends Service {
         } else {//sounds
             mpSounds.get(soundIndex - 1).setVolume(volume, volume);
         }
+//        this.musicSoundVolume.set(soundIndex, volume);
     }
 
     class LocalBinder extends Binder {

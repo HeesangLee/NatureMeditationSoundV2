@@ -12,7 +12,7 @@ public class GameConfiguration {
 
     Preferences preferences = Gdx.app.getPreferences("dalcoms.pub.naturesound.preference");
 
-    private final boolean initialPublishing = true;
+    private final boolean initialPublishing = false;
 
     private final String prefKey_ExeCount = "exeCount";
     private final String prefKey_Date = "date";
@@ -156,6 +156,7 @@ public class GameConfiguration {
     public void setHomeScreenCount(int homeScreenCount) {
         this.homeScreenCount = homeScreenCount;
     }
+
     public void incHomeScreenCount() {
         setHomeScreenCount(getHomeScreenCount() + 1);
     }
