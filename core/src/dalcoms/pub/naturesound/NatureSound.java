@@ -226,7 +226,7 @@ public class NatureSound extends Game {
     }
 
     public enum ADS {
-        ADMOB, PINDOT, DOTSUP, BRAINWAVE, SKINVIBOR, MEGABRICKS, TEETHROULETTE, FARTBUTTON,
+        ADMOB, PINDOT, DOTSUP, BRAINWAVE, SKINVIBOR, TEETHROULETTE, FARTBUTTON, MEGABRICKS
     }
 
     public String getMyBannerTexturePath(ADS ads) {
@@ -323,24 +323,17 @@ public class NatureSound extends Game {
     }
 
     public ADS getRandomAds() {
-        float rand = (float) Math.random();
+        final float rand = (float) Math.random();
         ADS randomAds;
 
-        if (rand < 0.15f) {
-            randomAds = ADS.DOTSUP;
-        } else if (rand < 0.25f) {
-            randomAds = ADS.PINDOT;
-        } else if (rand < 0.4f) {
-            randomAds = ADS.BRAINWAVE;
-        } else if (rand < 0.6f) {
-            randomAds = ADS.SKINVIBOR;
-        } else if (rand < 0.8f) {
-            randomAds = ADS.MEGABRICKS;
-        } else if (rand < 0.95f) {
-            randomAds = ADS.FARTBUTTON;
-        } else {
-            randomAds = ADS.TEETHROULETTE;
-        }
+        int adsIndex = Math.round(rand * (float) (ADS.values().length - 1)) % ADS.values().length;
+        adsIndex = adsIndex > 0 ? adsIndex : ADS.values().length - 1;
+
+        randomAds = ADS.values()[adsIndex];
+        Gdx.app.log(tag,
+                    "getRandomAds() :  " + randomAds.toString() + ",rand=" + rand + ", adsIndex=" +
+                    adsIndex);
+
         return randomAds;
     }
 

@@ -16,60 +16,64 @@ Oreo level 26 ?
 ## Media Player and Audio Focus
 오디오 포커스를 획득하고 미디어 플레이어의 오디오 속성을 해당 오디오 포커스의 속성과 맞춰야 하는 것 같다.
 ```java
+
 private void requestAudioFocus() {
-        audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
-        focusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-        .setAudioAttributes(new AudioAttributes.Builder()
-        .setUsage(AudioAttributes.USAGE_MEDIA)
-        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-        .build())
-        .build();
-        int res = audioManager.requestAudioFocus(focusRequest);
-        Log.d(tag, "Request audio focus : " + res);
-        }
+    audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+    focusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                            .setAudioAttributes(new AudioAttributes.Builder()
+                            .setUsage(AudioAttributes.USAGE_MEDIA)
+                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                            .build())
+                        .build();
+    int res = audioManager.requestAudioFocus(focusRequest);
+    Log.d(tag, "Request audio focus : " + res);
+}
 
 
 private void initMediaPlayer() {
-        requestAudioFocus();
+    requestAudioFocus();
 
-        musicBoxIndex = new Random().nextInt(musicBoxIds.length - 1);
-        Log.d(tag, "music box index = " + musicBoxIndex);
+    musicBoxIndex = new Random().nextInt(musicBoxIds.length - 1);
+    Log.d(tag, "music box index = " + musicBoxIndex);
 
-        mpMusicBox = MediaPlayer.create(getApplicationContext(), musicBoxIds[musicBoxIndex]);
-        mpMusicBox.setAudioAttributes(
-        new AudioAttributes.Builder()
-        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-        .setUsage(AudioAttributes.USAGE_MEDIA)
-        .build());
-        mpMusicBox.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-@Override
-public void onCompletion(MediaPlayer mp) {
-        mpMusicBox.release();
-        playNextMusicBox();
+    mpMusicBox = MediaPlayer.create(getApplicationContext(), musicBoxIds[musicBoxIndex]);
+    mpMusicBox.setAudioAttributes(
+            new AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .build());
+    mpMusicBox.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+        @Override
+        public void onCompletion(MediaPlayer mp) {
+            mpMusicBox.release();
+            playNextMusicBox();
         }
-        });
+    });
 
-        mpSounds = new ArrayList<>();
-        for (int soundId : soundIds) {
+    mpSounds = new ArrayList<>();
+    for (int soundId : soundIds) {
         MediaPlayer mp = MediaPlayer.create(getApplicationContext(), soundId);
         mp.setAudioAttributes(
-        new AudioAttributes.Builder()
-        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-        .setUsage(AudioAttributes.USAGE_MEDIA)
-        .build());
+                new AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .build());
         mp.setLooping(true);
         mpSounds.add(mp);
-        }
-        }
-
+    }
+}
 ```
 # 전면 광고
 ```mermaid
 
 graph TD
-  A[Timer is end] --> B[Show my screen ads]
-	C[On start] -->D{Exe count > 3}--Yes-->E[Put ad mark on one of sounds buttons]
-  E-->F[OnClick sound ad sound button]-->G[Show Screen ad]
-	D--No-->H[No Screen Ad]
-	I(OnCreate method)-->J[/exeCount++/]
+  A[Timer is end] --> B["showMyScreenAds()"]
+  C[On start] -->D{Exe count > 3}--Yes-->E[Put ad mark on one of sounds buttons]
+  E-->F[OnClick sound ad sound button]-->G["launchScreenAds()"]	
+  D--No-->H[No Screen Ad]	
+  I(OnCreate method)-->J[/exeCount++/]
+  
+  style B fill:#f05
+  style G fill:#f05
+	
 ```

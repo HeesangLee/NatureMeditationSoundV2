@@ -976,7 +976,7 @@ class HomeScreen implements Screen, GameTimer.EventListener {
 
         if (sgoMyScreenAdsCancelBg == null) {
             sgoMyScreenAdsCancelBg = new SpriteGameObject(
-                    game.getAssetManager().get("img/rect_18x18.png", Texture.class),
+                    game.getAssetManager().get("img/rect4x4.png", Texture.class),
                     0, (game.getLocationYFromTop(250f)))
                     .setSpriteBatch(game.getSpriteBatch());
             sgoMyScreenAdsCancelBg.setSize(game.getViewportWidth(), 250f);
@@ -1057,6 +1057,11 @@ class HomeScreen implements Screen, GameTimer.EventListener {
         this.sstbTimer.scale(1f, 1f, 0.1f);
         onTimerMode(false, false);
         offAllSoundButtonState();
+        showMyScreenAdsOnTimerEnd();
+    }
+
+    private void showMyScreenAdsOnTimerEnd() {
+        showMyScreenAds();
     }
 
     private void offAllSoundButtonState() {
