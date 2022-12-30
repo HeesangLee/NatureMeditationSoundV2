@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Message;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -60,7 +61,7 @@ import androidx.annotation.NonNull;
 public class AndroidLauncher extends AndroidApplication implements IActivityRequestHandler {
     final String tag = "AndroidLauncher";
     final String myPackage = "dalcoms.pub.naturesound";
-    final boolean testAdmobAds = true;
+    final boolean testAdmobAds = false;
     //    final boolean testAdmobAdsInHomePc = true;
     final boolean useFakeReview = false;
 
@@ -89,7 +90,7 @@ public class AndroidLauncher extends AndroidApplication implements IActivityRequ
     private final int REQ_APP_REVIEW = 12;
 
     private String stringToast = "";
-    private String stringPackageToVisit = "";
+    private String stringPackageToVisit = "dalcoms.pub.naturesound";
 
     MyService myService;
     boolean isService = false;
@@ -123,7 +124,7 @@ public class AndroidLauncher extends AndroidApplication implements IActivityRequ
     };
 
     @SuppressLint("HandlerLeak")
-    private final Handler handler = new Handler() {
+    private final Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);

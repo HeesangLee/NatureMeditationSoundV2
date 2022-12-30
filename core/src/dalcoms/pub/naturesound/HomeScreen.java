@@ -62,6 +62,7 @@ class HomeScreen implements Screen, GameTimer.EventListener {
     SliderX playerTimerSlider;
     SpriteGameObject sgoCompassSmall;
     Array<SoundButton> soundButtons;
+    SpriteGameObject sgoSoundAdMark;
 
     private boolean timerMode = false;
     private final int maxTimerTimeSec = 7200; //2*60*60 : 2hours
@@ -138,9 +139,9 @@ class HomeScreen implements Screen, GameTimer.EventListener {
     private void loadExeCount() {
         setExeCount(game.getGameConfiguration().getExeCount());
         game.getGameConfiguration().putExeCount(getExeCount() + 1, true);
-        if (getExeCount() > 0) {
-            launchReviewMyApp();
-        }
+//        if (getExeCount() > 0) {
+//            launchReviewMyApp();
+//        }
     }
 
     private float getFloatColor255(float colorInt) {
@@ -753,6 +754,43 @@ class HomeScreen implements Screen, GameTimer.EventListener {
         this.compassAvailable = compassAvailable;
     }
 
+    private void initSoundAdMark(float locX, float locYTop) {
+        sgoSoundAdMark =
+                new SpriteGameObject(
+                        game.getAssetManager().get("img/soundAdIcon.png", Texture.class),
+                        locX, 0)
+                        .setSpriteBatch(game.getSpriteBatch());
+        sgoSoundAdMark.setLocationY(locYTop - sgoSoundAdMark.getHeight());
+
+        renderables.add(sgoSoundAdMark);
+    }
+
+    private void removeSoundAdMark() {
+        if (sgoSoundAdMark != null) {
+            renderables.removeValue(sgoSoundAdMark, false);
+            sgoSoundAdMark = null;
+        }
+    }
+
+    private boolean isButtonAdsOn(int index, boolean resetAdOnIndex) {
+
+        boolean ret = soundButtons.get(index).getIndexA() == 100;
+        if (resetAdOnIndex) {
+            soundButtons.get(index).setIndexA(0);
+        }
+        return ret;
+    }
+
+    private void setAdMarkOnSoundButton() {
+        int buttonSize = soundButtons.size + 1;
+        int index = (int) Math.round((Math.random() * (double) (buttonSize - 1)));
+        soundButtons.get(index % soundButtons.size).setIndexA(100);
+        initSoundAdMark(soundButtons.get(index % soundButtons.size).getLocationX(),
+                        soundButtons.get(index % soundButtons.size).getLocationY()
+                        + soundButtons.get(index % soundButtons.size).getHeight());
+
+    }
+
     private void initSoundButtons() {
         final float hMargin = (game.getViewportWidth() - 920f) / 2f; // left/right margin
         final float offset = (920f - 280f * 3f) / 2f;
@@ -772,9 +810,10 @@ class HomeScreen implements Screen, GameTimer.EventListener {
                     @Override
                     public void onTab(int index, boolean buttonState) {
                         super.onTab(index, buttonState);
-                        game.getLauncherHandler()
-                            .playMusic(index, buttonState, getSoundVolume(index));
-                        Gdx.app.log(tag, "SoundButton " + index + " : " + buttonState);
+//                        game.getLauncherHandler()
+//                            .playMusic(index, buttonState, getSoundVolume(index));
+//                        Gdx.app.log(tag, "SoundButton " + index + " : " + buttonState);
+                        onSoundBtnTabEvent(index, buttonState);
                     }
                 };
         sndMusicBtn.setIndex(0);
@@ -799,10 +838,11 @@ class HomeScreen implements Screen, GameTimer.EventListener {
                         @Override
                         public void onTab(int index, boolean buttonState) {
                             super.onTab(index, buttonState);
-                            game.getLauncherHandler()
-                                .playMusic(index, buttonState, getSoundVolume(index));
-                            //get volume
-                            Gdx.app.log(tag, "SoundButton " + index + " : " + buttonState);
+//                            game.getLauncherHandler()
+//                                .playMusic(index, buttonState, getSoundVolume(index));
+//                            //get volume
+//                            Gdx.app.log(tag, "SoundButton " + index + " : " + buttonState);
+                            onSoundBtnTabEvent(index, buttonState);
                         }
                     };
             sndBtn.setIndex(i + 1);
@@ -817,6 +857,22 @@ class HomeScreen implements Screen, GameTimer.EventListener {
             renderables.add(soundButton);
             gestureDetectables.add(soundButton);
         }
+
+        if (getExeCount() > 3) {
+            setAdMarkOnSoundButton();
+        }
+    }
+
+    private void onSoundBtnTabEvent(int index, boolean buttonState) {
+        game.getLauncherHandler()
+            .playMusic(index, buttonState, getSoundVolume(index));
+        //get volume
+        Gdx.app.log(tag, "SoundButton " + index + " : " + buttonState);
+        if (isButtonAdsOn(index, true)) {
+            launchScreenAds();
+            removeSoundAdMark();
+        }
+
     }
 
     private void initTitle() {
@@ -865,14 +921,20 @@ class HomeScreen implements Screen, GameTimer.EventListener {
         } else {
             if (exeCount == 0) {
                 showMyScreenAds();
-            } else if (exeCount < 3) {
-                if (Math.random() < 0.5f) {
+            } else if (exeCount < 10) {
+                if (Math.random() < 0.3f) {
+                    showMyScreenAds();
+                } else {
+                    showAdmobScreenAds();
+                }
+            } else if (exeCount < 20) {
+                if (Math.random() < 0.1f) {
                     showMyScreenAds();
                 } else {
                     showAdmobScreenAds();
                 }
             } else {
-                if (Math.random() < 0.1f) {
+                if (Math.random() < 0.02f) {
                     showMyScreenAds();
                 } else {
                     showAdmobScreenAds();
@@ -1021,6 +1083,11 @@ class HomeScreen implements Screen, GameTimer.EventListener {
         if (isCompassAvailable()) {
             checkCompass(1f);
         }
+
+        if (this.gameTimer.getCntTime1sec() == 15 || this.gameTimer.getCntTime1sec() == 60) {
+            launchReviewMyApp();
+        }
+        Gdx.app.log(tag, "Timer cnt = " + this.gameTimer.getCntTime1sec());
     }
 
     @Override
@@ -1337,5 +1404,6 @@ class HomeScreen implements Screen, GameTimer.EventListener {
 
     public void setExeCount(int exeCount) {
         this.exeCount = exeCount;
+        Gdx.app.log(tag, "exe count = " + exeCount);
     }
 }

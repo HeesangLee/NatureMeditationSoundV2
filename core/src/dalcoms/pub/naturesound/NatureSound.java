@@ -350,9 +350,10 @@ public class NatureSound extends Game {
     }
 
     private void loadAssetMyAds() {
-        for (String path : getMyAdsBannerTexturePath()) {
-            assetManager.load(path, Texture.class, para);
-        }
+//        for (String path : getMyAdsBannerTexturePath()) {
+//            assetManager.load(path, Texture.class, para);
+//        }
+
         assetManager.load("img/adsCloseButton.png", Texture.class, para);
         assetManager.load("img/screenAdsDotsup.png", Texture.class, para);
         assetManager.load("img/screenAdsPindot.png", Texture.class, para);

@@ -73,7 +73,8 @@ graph TD
   D--No-->H[No Screen Ad]	
   I(OnCreate method)-->J[/exeCount++/]
   
-  style B fill:#f05
-  style G fill:#f05
+  style B fill:#f95
+  style G fill:#f95
+  style J fill:#f95
 	
 ```

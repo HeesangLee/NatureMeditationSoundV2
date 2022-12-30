@@ -4,16 +4,16 @@
     <string name="app_name">Nature Meditation Sound</string>
 
     <!--    Test-->
-        <string name="gms_ad_app_id">ca-app-pub-3940256099942544~3347511713</string>
-        <string name="admob_unit_id_banner">ca-app-pub-3940256099942544/6300978111</string>
-        <string name="admob_unit_id_interstitial">ca-app-pub-3940256099942544/1033173712</string>
-        <string name="admob_unit_id_reward">ca-app-pub-3940256099942544/5224354917</string>
+<!--        <string name="gms_ad_app_id">ca-app-pub-3940256099942544~3347511713</string>-->
+<!--        <string name="admob_unit_id_banner">ca-app-pub-3940256099942544/6300978111</string>-->
+<!--        <string name="admob_unit_id_interstitial">ca-app-pub-3940256099942544/1033173712</string>-->
+<!--        <string name="admob_unit_id_reward">ca-app-pub-3940256099942544/5224354917</string>-->
 
     <!--        Release-->
-<!--    <string name="gms_ad_app_id">ca-app-pub-0894410772194388~9042835100</string>-->
-<!--    <string name="admob_unit_id_banner">ca-app-pub-0894410772194388/3939798366</string>-->
-<!--    <string name="admob_unit_id_interstitial">ca-app-pub-0894410772194388/6214607910</string>-->
-<!--    <string name="admob_unit_id_reward">ca-app-pub-0894410772194388/7707900403</string>-->
-<!--    <string name="admob_unit_id_openapp">ca-app-pub-0894410772194388/6394818732</string>-->
+    <string name="gms_ad_app_id">ca-app-pub-0894410772194388~9042835100</string>
+    <string name="admob_unit_id_banner">ca-app-pub-0894410772194388/3939798366</string>
+    <string name="admob_unit_id_interstitial">ca-app-pub-0894410772194388/6214607910</string>
+    <string name="admob_unit_id_reward">ca-app-pub-0894410772194388/7707900403</string>
+    <string name="admob_unit_id_openapp">ca-app-pub-0894410772194388/6394818732</string>
 
 </resources>
